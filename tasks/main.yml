@@ -1,6 +1,10 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # tasks file for ansible-role-k0rdent
+# docs: https://docs.k0rdent.io/latest/quickstarts/quickstart-1-mgmt-node-and-cluster/#install-a-kubernetes-cluster-as-the-management-cluster
+
+# 1. Install a Kubernetes cluster as the management cluster
+
 - name: Download k0s install script
   ansible.builtin.get_url:
     url: https://get.k0s.sh
@@ -20,3 +24,60 @@
 - name: Start k0s service
   become: true
   ansible.builtin.command: k0s start
+
+# 2. Install kubectl
+
+- name: Refresh package lists
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install required packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+
+- name: Download k8s GPG key
+  get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+    dest: /tmp/k8s.key
+    mode: "0644"
+
+- name: Install k8s GPG key
+  shell: |
+    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/k8s.key
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Allow unprivileged apt programs to read keyring
+  become: true
+  file:
+    path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: "0644"
+
+- name: Add k8s apt repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+    state: present
+    filename: kubernetes
+
+- name: Allow tools like command-not-found work correctly
+  become: true
+  file:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    mode: "0644"
+
+- name: Refresh package lists (second time)
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install kubectl
+  apt:
+    name:
+      - kubectl
+    state: present
