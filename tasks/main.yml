@@ -101,3 +101,14 @@
   ansible.builtin.lineinfile:
     path: ~/.bashrc
     line: "export KUBECONFIG=~/KUBECONFIG"
+
+# Install Helm
+
+- name: Download Helm install script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get_helm.sh
+    mode: "0770"
+
+- name: Run Helm install script
+  ansible.builtin.command: /tmp/get_helm.sh
