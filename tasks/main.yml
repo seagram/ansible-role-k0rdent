@@ -112,3 +112,7 @@
 
 - name: Run Helm install script
   ansible.builtin.command: /tmp/get_helm.sh
+
+# Install k0rdent
+- name: Install k0rdent with Helm
+  ansible.builtin.command: helm install kcm oci://ghcr.io/k0rdent/kcm/charts/kcm --version 1.7.0 -n kcm-system --create-namespace
