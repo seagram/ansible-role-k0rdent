@@ -1,3 +1,22 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # tasks file for ansible-role-k0rdent
+- name: Download k0s install script
+  ansible.builtin.get_url:
+    url: https://get.k0s.sh
+    dest: /tmp/install-k0s.sh
+    mode: "0775"
+
+- name: Run k0s install script
+  become: true
+  ansible.builtin.command: /tmp/install-k0s.sh
+  args:
+    creates: /usr/local/bin/k0s
+
+- name: Install k0s as a service
+  become: true
+  ansible.builtin.command: k0s install controller --enable-worker --no-taints
+
+- name: Start k0s service
+  become: true
+  ansible.builtin.command: k0s start
