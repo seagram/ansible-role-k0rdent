@@ -81,3 +81,23 @@
     name:
       - kubectl
     state: present
+
+# Get the local k0s cluster's kubeconfig for kubectl
+
+- name: Copy k0s admin kubeconfig
+  become: true
+  ansible.builtin.copy:
+    src: /var/lib/k0s/pki/admin.conf
+    dest: /home/{{ ansible_user }}/KUBECONFIG
+    remote_src: true
+
+- name: Set required permission for kubeconfig
+  become: true
+  file:
+    path: /home/{{ ansible_user }}/KUBECONFIG
+    mode: "0644"
+
+- name: Set KUBECONFIG in .bashrc
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: "export KUBECONFIG=~/KUBECONFIG"
